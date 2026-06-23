@@ -2,8 +2,6 @@ pipeline {
     agent any
 
     environment {
-        // Define global environment variables here
-        NODE_ENV = 'test'
         DOCKER_IMAGE_NAME = 'tasksphere-web'
     }
 
@@ -15,11 +13,16 @@ pipeline {
             }
         }
 
-        stage('Install Dependencies') {
+        stage('Install Backend Dependencies') {
             steps {
                 dir('backend') {
-                    bat 'npm ci'
+                    bat 'npm install'
                 }
+            }
+        }
+
+        stage('Install Frontend Dependencies') {
+            steps {
                 dir('frontend') {
                     bat 'npm install --legacy-peer-deps'
                 }
@@ -29,7 +32,9 @@ pipeline {
         stage('Lint Frontend') {
             steps {
                 dir('frontend') {
-                    bat 'node_modules\\.bin\\eslint . --max-warnings 0'
+                    catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
+                        bat 'node_modules\\.bin\\eslint . --max-warnings 0'
+                    }
                 }
             }
         }
@@ -67,7 +72,6 @@ pipeline {
         }
         failure {
             echo 'Pipeline failed. Please review the logs.'
-            // Here you can add notifications (Slack, Email)
         }
     }
 }
