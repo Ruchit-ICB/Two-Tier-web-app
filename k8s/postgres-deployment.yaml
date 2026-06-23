@@ -1,0 +1,85 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tasksphere-db
+  labels:
+    app: tasksphere
+    tier: database
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tasksphere
+      tier: database
+  template:
+    metadata:
+      labels:
+        app: tasksphere
+        tier: database
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:15-alpine
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: POSTGRES_DB
+              valueFrom:
+                configMapKeyRef:
+                  name: tasksphere-config
+                  key: DB_NAME
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: tasksphere-secrets
+                  key: DB_USER
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: tasksphere-secrets
+                  key: DB_PASSWORD
+          ports:
+            - containerPort: 5432
+              name: postgres
+          volumeMounts:
+            - name: postgres-storage
+              mountPath: /var/lib/postgresql/data
+          livenessProbe:
+            exec:
+              command:
+                - pg_isready
+                - -U
+                - postgres
+                - -d
+                - tasksphere
+            initialDelaySeconds: 15
+            periodSeconds: 10
+          readinessProbe:
+            exec:
+              command:
+                - pg_isready
+                - -U
+                - postgres
+                - -d
+                - tasksphere
+            initialDelaySeconds: 5
+            periodSeconds: 5
+      volumes:
+        - name: postgres-storage
+          persistentVolumeClaim:
+            claimName: postgres-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tasksphere-db-service
+  labels:
+    app: tasksphere
+    tier: database
+spec:
+  ports:
+    - port: 5432
+      targetPort: 5432
+  selector:
+    app: tasksphere
+    tier: database
+  type: ClusterIP

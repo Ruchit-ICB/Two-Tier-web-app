@@ -1,0 +1,92 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tasksphere-web
+  labels:
+    app: tasksphere
+    tier: web
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tasksphere
+      tier: web
+  template:
+    metadata:
+      labels:
+        app: tasksphere
+        tier: web
+    spec:
+      containers:
+        - name: webapp
+          image: tasksphere-web:latest
+          imagePullPolicy: Never # Using local image for development/minikube environment
+          ports:
+            - containerPort: 5000
+              name: http
+          env:
+            - name: NODE_ENV
+              valueFrom:
+                configMapKeyRef:
+                  name: tasksphere-config
+                  key: NODE_ENV
+            - name: PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: tasksphere-config
+                  key: PORT
+            - name: DB_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: tasksphere-config
+                  key: DB_HOST
+            - name: DB_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: tasksphere-config
+                  key: DB_PORT
+            - name: DB_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: tasksphere-config
+                  key: DB_NAME
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: tasksphere-secrets
+                  key: DB_USER
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: tasksphere-secrets
+                  key: DB_PASSWORD
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 5000
+            initialDelaySeconds: 20
+            periodSeconds: 15
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 5000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tasksphere-web-service
+  labels:
+    app: tasksphere
+    tier: web
+spec:
+  type: NodePort
+  ports:
+    - port: 5000
+      targetPort: 5000
+      nodePort: 30080
+      name: http
+  selector:
+    app: tasksphere
+    tier: web
