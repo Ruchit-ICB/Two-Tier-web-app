@@ -4,37 +4,41 @@ import reactHooksPlugin from "eslint-plugin-react-hooks";
 import globals from "globals";
 
 export default [
-  // Global environment settings
   {
+    files: ["**/*.{js,jsx}"],
+    ignores: ["dist/**", "node_modules/**"],
+
     languageOptions: {
+      ecmaVersion: "latest",
+      sourceType: "module",
       globals: {
         ...globals.browser,
         ...globals.node,
       },
       parserOptions: {
-        ecmaVersion: "latest",
-        sourceType: "module",
-        ecmaFeatures: { jsx: true },
+        ecmaFeatures: {
+          jsx: true,
+        },
       },
     },
-  },
 
-  // Base ESLint recommended rules
-  js.configs.recommended,
-
-  // React specific rules
-  {
     plugins: {
       react: reactPlugin,
       "react-hooks": reactHooksPlugin,
     },
+
+    settings: {
+      react: {
+        version: "detect",
+      },
+    },
+
     rules: {
+      ...js.configs.recommended.rules,
       ...reactPlugin.configs.recommended.rules,
       ...reactHooksPlugin.configs.recommended.rules,
+
       "react/react-in-jsx-scope": "off",
-    },
-    settings: {
-      react: { version: "detect" },
     },
   },
 ];
