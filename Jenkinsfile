@@ -29,7 +29,7 @@ pipeline {
         stage('Lint Frontend') {
             steps {
                 dir('frontend') {
-                    sh 'npm run lint'
+                    bat 'npm run lint'
                 }
             }
         }
@@ -37,7 +37,7 @@ pipeline {
         stage('Run Backend Integration Tests') {
             steps {
                 dir('backend') {
-                    sh 'npm test'
+                    bat 'npm test'
                 }
             }
         }
@@ -45,7 +45,7 @@ pipeline {
         stage('Build Frontend Artifacts') {
             steps {
                 dir('frontend') {
-                    sh 'npm run build'
+                    bat 'npm run build'
                 }
             }
         }
@@ -53,7 +53,7 @@ pipeline {
         stage('Docker Production Build') {
             steps {
                 echo 'Building Docker production multi-stage image...'
-                sh "docker build -t ${DOCKER_IMAGE_NAME}:${env.BUILD_ID} -t ${DOCKER_IMAGE_NAME}:latest -f backend/Dockerfile ."
+                bat "docker build -t ${DOCKER_IMAGE_NAME}:${env.BUILD_ID} -t ${DOCKER_IMAGE_NAME}:latest -f backend/Dockerfile ."
             }
         }
     }

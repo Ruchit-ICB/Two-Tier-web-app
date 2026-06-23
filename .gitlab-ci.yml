@@ -1,0 +1,59 @@
+stages:
+  - install
+  - lint
+  - test
+  - build
+  - docker
+
+variables:
+  NODE_ENV: "test"
+  DOCKER_IMAGE_NAME: "tasksphere-web"
+  DOCKER_TAG: "${CI_COMMIT_SHORT_SHA}"
+
+install_dependencies:
+  stage: install
+  image: node:22-alpine
+  script:
+    - cd backend && npm ci
+    - cd ../frontend && npm ci
+  artifacts:
+    paths:
+      - backend/node_modules/
+      - frontend/node_modules/
+
+lint_frontend:
+  stage: lint
+  image: node:22-alpine
+  script:
+    - cd frontend && npm run lint
+
+test_backend:
+  stage: test
+  image: node:22-alpine
+  script:
+    - cd backend && npm test
+
+build_frontend:
+  stage: build
+  image: node:22-alpine
+  script:
+    - cd frontend && npm run build
+  artifacts:
+    paths:
+      - frontend/dist/
+
+docker_build:
+  stage: docker
+  image: docker:24.0.5-dind
+  services:
+    - docker:24.0.5-dind
+  variables:
+    DOCKER_TLS_CERTDIR: ""
+  script:
+    - echo "Logging into Docker registry"
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+    - docker build -t $DOCKER_IMAGE_NAME:$DOCKER_TAG -t $DOCKER_IMAGE_NAME:latest -f backend/Dockerfile .
+    - docker push $DOCKER_IMAGE_NAME:$DOCKER_TAG
+    - docker push $DOCKER_IMAGE_NAME:latest
+  only:
+    - main
