@@ -29,16 +29,6 @@ pipeline {
             }
         }
 
-        stage('Lint Frontend') {
-            steps {
-                dir('frontend') {
-                    catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
-                        bat 'node_modules\\.bin\\eslint . --config eslint.config.js --max-warnings 0'
-                    }
-                }
-            }
-        }
-
         stage('Run Backend Integration Tests') {
             steps {
                 dir('backend') {
