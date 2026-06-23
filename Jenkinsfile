@@ -29,7 +29,7 @@ pipeline {
         stage('Lint Frontend') {
             steps {
                 dir('frontend') {
-                    bat 'npx eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0'
+                    bat 'npm run lint'
                 }
             }
         }
