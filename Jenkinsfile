@@ -18,10 +18,10 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 dir('backend') {
-                    sh 'npm ci'
+                    bat 'npm ci'
                 }
                 dir('frontend') {
-                    sh 'npm ci'
+                    bat 'npm ci'
                 }
             }
         }
