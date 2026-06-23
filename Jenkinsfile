@@ -33,7 +33,7 @@ pipeline {
             steps {
                 dir('frontend') {
                     catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
-                        bat 'node_modules\\.bin\\eslint . --max-warnings 0'
+                        bat 'node_modules\\.bin\\eslint . --config eslint.config.js --max-warnings 0'
                     }
                 }
             }
