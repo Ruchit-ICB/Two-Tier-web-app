@@ -21,7 +21,7 @@ pipeline {
                     bat 'npm ci'
                 }
                 dir('frontend') {
-                    bat 'npm ci'
+                    bat 'npm install --legacy-peer-deps'
                 }
             }
         }
@@ -29,7 +29,7 @@ pipeline {
         stage('Lint Frontend') {
             steps {
                 dir('frontend') {
-                    bat 'npm run lint'
+                    bat 'node_modules\\.bin\\eslint . --max-warnings 0'
                 }
             }
         }
